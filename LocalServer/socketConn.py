@@ -12,10 +12,9 @@ from socket import *
 
 import threading
 import thread
+import json
 
-#import struct
-
-#recv from flash client socket
+from Stabilizer import MotionDataHandler
 
 class TrackingBridge():
     def readCfg(self):
@@ -65,12 +64,15 @@ class TrackingBridge():
 
         while 1:
             print 'waiting for connection...'
-            self.clientsock, addr = self.serverTCPSock.accept()
+            #the key problem now is we only assign the unique client's socket that comes in no matter whatever it is   
+            self.clientsock, addr = self.serverTCPSock.accept();
+
             self.isClientConn=True
             print 'tcpServerSocket connect:', addr
             thread.start_new_thread(self.tcpSocketHandler, (self.clientsock, addr))
 
 
+    #now, no msg from flash client
     def tcpSocketHandler(self, clientTCPSock,addr):
         while 1:
             try:
@@ -88,33 +90,39 @@ class TrackingBridge():
         
     #udp socket recvfrom    
     def udpSocketHandler(self,serverUDPSock, size):
+        stabilizer = MotionDataHandler(self.sendPkg2Client);
+        stabilizer.startProcess();
 
         while 1:
             try:            
-                jsonMsg,  (addr, port) = self.serverUDPSock.recvfrom(size );# 4*(6+2)*15
+                origMsg,  (addr, port) = self.serverUDPSock.recvfrom(size );# 4*(6+2)*15
                 #jsonObj = json.loads(message);
-                                    #print "Got data from", address,'msg=',jsonObj['txt']
-                                    
-                                    #s.sendto(" Sever: client has recv data", address)
-                msgLen =len(jsonMsg)                                
+                  
+                #print "len",len(jsonMsg)                                
                 #
 
                 #we use two global para to judge whether the unqiue flash client is connected
 
                 #check whether flashClient is connected
+                #if True :
                 if self.isClientConn==True  and self.clientsock !=None :
                     
 
                     #print " getIsClientConn:", self.isClientConn
+                    jsonMsg=json.loads(origMsg)
                     try:
                         #unpack the json data, and process motionRect part and repack it then 
-                        self.clientsock.send( jsonMsg);
+                        
+                        stabilizer.processAndSendJsonPkg(jsonMsg);
+                        
 
                     except Exception,e :
                         self.isClientConn =False
+
                         if e.errno == 10054:
                             print   "client  connection was forcibly closed"
                             #clientsock.close();                       
+                       
                         raise
 
                 #print msg
@@ -122,7 +130,10 @@ class TrackingBridge():
                                 
             except:
                 traceback.print_exc()
-
+    
+    def sendPkg2Client(self,pkg):
+        if self.isClientConn==True  and self.clientsock !=None :
+            self.clientsock.send( pkg);
 
 """
 def getIsClientConn():
