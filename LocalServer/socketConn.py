@@ -14,7 +14,7 @@ import threading
 import thread
 import json
 
-from Stabilizer import MotionDataHandler
+from Stabilizer_v2 import MotionObjectStabilizer
 
 class TrackingBridge():
     def readCfg(self):
@@ -90,7 +90,7 @@ class TrackingBridge():
         
     #udp socket recvfrom    
     def udpSocketHandler(self,serverUDPSock, size):
-        stabilizer = MotionDataHandler(self.sendPkg2Client);
+        stabilizer = MotionObjectStabilizer(self.sendPkg2Client);
         stabilizer.startProcess();
 
         while 1:
@@ -113,14 +113,15 @@ class TrackingBridge():
                     try:
                         #unpack the json data, and process motionRect part and repack it then 
                         
-                        stabilizer.processAndSendJsonPkg(jsonMsg);
+                        stabilizer.sendExternalMsg(jsonMsg);
                         
 
                     except Exception,e :
                         self.isClientConn =False
+                        
 
-                        if e.errno == 10054:
-                            print   "client  connection was forcibly closed"
+                        #if e.errno == 10054:
+                        print   "??? client  connection was forcibly closed"
                             #clientsock.close();                       
                        
                         raise

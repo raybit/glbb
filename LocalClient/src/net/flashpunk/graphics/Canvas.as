@@ -174,6 +174,30 @@
 			}
 		}
 		
+		// custom def
+		/**
+		 * Erases the rectangular area of the canvas.
+		 * @param	rect		Fill rectangle.
+		 */
+		public function erase(rect:Rectangle):void
+		{
+			var xx:int, yy:int, buffer:BitmapData;
+			for each (buffer in _buffers)
+			{
+				_graphics.clear();
+				_graphics.beginFill(color, alpha);
+				_graphics.drawRect(rect.x - xx, rect.y - yy, rect.width, rect.height);
+				buffer.draw(FP.sprite, null, null, "erase");
+				xx += _maxWidth;
+				if (xx >= _width)
+				{
+				xx = 0;
+				yy += _maxHeight;
+				}
+			}
+			_graphics.endFill();
+		}
+
 		/**
 		 * Draws over a rectangular area of the canvas.
 		 * @param	rect		Drawing rectangle.

@@ -67,21 +67,32 @@
 					 
 					//trace("recv-data msgLen:" + reads.length);  
 					//trace(reads.toString());
-					try{
+					
 						//when we recv more than one packet, we only process the first one and ignore others
-						sEvt = new SocketEvent("onRecvData");
-						sEvt.dataObj = new Object();
-						sEvt.dataObj = JSON.decode(reads.toString().split("\n")[0]);
 						
 
-						dispatchEvent(sEvt);
-						  //drawMotion(jsonResponse); //interface 
+						
+						var msgArr:Array = reads.toString().split("\n");
+						for each(var msgItem:String in msgArr) {
+							if (msgItem.length >1) {
+								try{
+									sEvt = new SocketEvent("onRecvData");
+									sEvt.dataObj = new Object();
 
-					}catch(error:Error){
-						trace('error in input strem');
-						trace(reads.toString())
-					}
+									sEvt.dataObj = JSON.decode(msgItem);
+									dispatchEvent(sEvt);
+								}catch(error:Error){
+								//trace('error in input strem');
+									trace('errorinput: '+msgItem)
+								
+								}
+							}
 					
+					
+						}
+						
+
+				
 			}  
 		}  
 
