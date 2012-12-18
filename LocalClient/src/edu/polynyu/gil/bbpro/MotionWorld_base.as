@@ -65,7 +65,7 @@ package edu.polynyu.gil.bbpro
 			this._mBitMap = new MotionBitMap(origW * sizeRatio, origH * sizeRatio);
 	
 			this._mBgCanvas = new Canvas(origW*sizeRatio,origH*sizeRatio);
-			this._mBgCanvas.blend = flash.display.BlendMode.OVERLAY;
+			this._mBgCanvas.blend = flash.display.BlendMode.MULTIPLY;
 			
 			
 			this._mObjCanvas  =new Canvas(origW*sizeRatio,origH*sizeRatio);
@@ -98,12 +98,25 @@ package edu.polynyu.gil.bbpro
 					this._mObjPool.objCounter--;
 					trace('word del:mobj:'+mObj.id +',hp:'+mObj.hp+'    lenOfDict:'+this._mObjPool.objCounter);
 					continue;
-				}   
-				
+				}
+				if (mObj.hp < 100 && mObj.hp == mObj.preHp) {
+					
+					mObj.repeatHPCounter++;
+					
+					if (mObj.repeatHPCounter > 60) {
+						delete dict[mObj.id];
+						this._mObjPool.objCounter--;
+						trace('word del:mobj:'+mObj.id +',hp:'+mObj.hp+'    lenOfDict:'+this._mObjPool.objCounter);
+						continue;
+					}
+				}else {
+					mObj.preHp = mObj.hp;
+				}
+					
 				trace('mobj id:' + mObj.id + ', hp:' + mObj.hp+" rsize:"+mObj.rsize);
 				
-				if(mObj.rsize==0 && mObj.time>1){
-					this._mObjCanvas.drawRect(mObj.rect, mObjCol0,  mObj.hp / 100);//
+				if(mObj.rsize==0 && mObj.hp>250 ){
+					this._mObjCanvas.drawRect(mObj.rect, mObjCol0,0.15+0.8*(mObj.hp/1000));//
 				}
 				/*
 				 else if (mObj.rsize == 1) {
@@ -118,6 +131,7 @@ package edu.polynyu.gil.bbpro
 			
 			//_graphic.render(
 			super.render();
+			trace('......in render');
 		
 		}
 		

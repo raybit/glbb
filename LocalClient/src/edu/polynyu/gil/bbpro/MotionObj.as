@@ -27,6 +27,9 @@ package edu.polynyu.gil.bbpro
 		public var hp:int;
 		public var time:int;
 		
+		public var preHp:int = 0;
+		public var repeatHPCounter:int=0;
+		
 		private const sizeRatio:uint = 2;
 		//private static var camH:int = GCfg.camScreenH;
 		private static var camW:int = GCfg.camScreenW;
