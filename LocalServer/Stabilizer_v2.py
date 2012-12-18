@@ -128,6 +128,7 @@ class MotionObjectStabilizer(object):
 		#It compares the input motionDataList with several internal cached data to judge each motionRegion item within the list
 
         self.objmngr.MatchObj(motionDataList);
+        print '!',;
 
         #if updatelist is nothing,objList is []
         objList = self.objmngr.composeMObjList(self.objmngr.updateList)
@@ -167,8 +168,8 @@ class MotionObjMngr(object):
 
     	# (maxHP+|minHP|)/|hpDec|/ fpsnum == the min time to force a full HP/charged mobj to be deleted,
     	# (100+20)/2/20=3s
-        self.maxHP=50;
-
+        #self.maxHP=50;
+        self.maxHP=1000; #each frame may increas 5 at most, 1sec=100,
 
         #the offset is affacted by fps
         #at 20fps for a 640*480 video input
@@ -335,7 +336,13 @@ class MotionObjMngr(object):
             if( isMatchedFlag == False): #if all failed
             	#mobj0['HP'] += self.hpDec  
                 #now update this unchanged mobj
-                self.updateMObj(mobj0,None, None,self.hpDec )
+
+                #using differet math function to decrease hp
+
+                if mobj0['HP']>50:
+                    self.updateMObj(mobj0,None, None,mobj0['HP']*-0.1 )
+                else:
+                    self.updateMObj(mobj0,None, None,self.hpDec )
                 
             	#do the update & refesh
 
@@ -450,8 +457,8 @@ class MotionObjMngr(object):
         for mobj in self.mobjCacheList:
             #if(mobj['HP']< self.minHP): #default min=-5;
             #mobj['HP']-=1;
-            if self.isOID_MObj(mobj): 
-                print mobj['oid'],':',mobj['HP']
+            #if self.isOID_MObj(mobj): 
+            #    print mobj['oid'],'hp:',mobj['HP']
 
             if(mobj['HP']< self.minHP): #default min=-5;
                 #delete if from list
@@ -479,7 +486,7 @@ class MotionObjMngr(object):
                     #mobj['buff']= ring_buffer(self.ringBuffLen); #use ring buff to record the last 10 data of one OID OBJ
 
                     #self.printMObj(mobj, "MainCreate:")
-                    print"           G->oid:", mobj['oid'],'hp:',mobj['HP']
+                    # print"           G->oid:", mobj['oid'],'hp:',mobj['HP']
                     self.scanBufferList.append(mobj);
                     #print "[--------], ID:%d/%d,\t%s,\tx:%d\ty:%d\th:%d\tw:%d\ts:%d\t" % (mobj['id'],mobj['oid'], mobj['op'],mobj['xPos'],mobj['yPos'],mobj['height'],mobj['width'],mobj['cellSize'])
                 elif mobj['ghostTimer'] ==0 and mobj['HP']<0:
@@ -529,19 +536,20 @@ class MotionObjMngr(object):
         
 
         if  r <=50 and cSize<=145: #ideal is w=40 h=40 r=5.6 , about a hand size in 3m distance
-            print mobj["oid"],'--->0'
+            #print mobj["oid"],'--->0'
             return 0;
         elif r <=60 and cSize<=210:#harf body size
-            print mobj["oid"],'--->11,',w,h,r,cSize
+            print mobj["oid"],'--------->11,',w,h,r,cSize
             return 1;
         elif w<=100 and h<=100 and cSize<250: #one body size
             return 2;
+            print mobj["oid"],'---------22---------22>', w,h,r,cSize
         elif w<=200 and h<=200  and cSize<1000: #multi bodys size(2-3)
             return 3;
         elif w<=400 and h<=300 and cSize>1600 : #A larger region with fillRatio >0.33
             return 4;
         else:
-            print mobj["oid"],'--->', w,h,r,cSize
+            #print mobj["oid"],'---else----->', w,h,r,cSize
             return -1; #unexcepted sizes
 
 
