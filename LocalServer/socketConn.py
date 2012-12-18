@@ -24,7 +24,7 @@ class TrackingBridge():
                     
         self.tcpADDR = (host, tcpPort)
         self.udpADDR =(host, udpPort)
-        self.TCPBUFSIZE =1024
+        self.TCPBUFSIZE = 10000
         self.UDPBUFSIZE = 10000
 
     def __init__(self):
@@ -109,21 +109,27 @@ class TrackingBridge():
                     
 
                     #print " getIsClientConn:", self.isClientConn
-                    jsonMsg=json.loads(origMsg)
                     try:
-                        #unpack the json data, and process motionRect part and repack it then 
-                        
-                        stabilizer.sendExternalMsg(jsonMsg);
-                        
+                        jsonMsg=json.loads(origMsg) 
+                    except:
+                        print "json error"
+                        print origMsg;
+
+                    try:
+                        #unpack the json data, and process motionRect part and repack it then                         
+                        stabilizer.sendExternalMsg(jsonMsg);                       
 
                     except Exception,e :
                         self.isClientConn =False
-                        
-
-                        #if e.errno == 10054:
-                        print   "??? client  connection was forcibly closed"
-                            #clientsock.close();                       
-                       
+                        """
+                        try:
+                            
+                            if e.errno== 10054:
+                                print   " client  connection was forcibly closed"
+                                #clientsock.close();                       
+                        except:
+                                print   " connection was closed"
+                        """
                         raise
 
                 #print msg
