@@ -34,7 +34,10 @@ package edu.polynyu.gil.bbpro
 		override public function init():void
 		{
 			trace("FlashPunk has started successfully!");
-			this.sock.doConn(); //todo check whether connected
+			if ( this.sock != undefined) {
+				this.sock.doConn(); //todo check whether connected
+			}
+			
 			
 		}
 
