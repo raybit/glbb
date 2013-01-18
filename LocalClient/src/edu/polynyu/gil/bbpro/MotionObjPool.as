@@ -41,7 +41,7 @@ package edu.polynyu.gil.bbpro
 		}
 		public function update(motionObjList:Array):void {
 			//trace('update mobj-------');
-			var mlen = motionObjList.length;
+			var mlen:uint = motionObjList.length;
 			if ( mlen == 0) {
 				//skip
 				return;
@@ -53,7 +53,7 @@ package edu.polynyu.gil.bbpro
 			var mobj:MotionObj;
 			
 			for ( ; i < mlen; i++) {
-				var item:Object = motionObjList[i];
+				item = motionObjList[i];
 				id = item.id;
 				
 								
@@ -67,7 +67,7 @@ package edu.polynyu.gil.bbpro
 						break;
 					case opSet.del:
 						mobj = this.objDict[id];
-						if (mobj == undefined || mobj == null) {
+						if (mobj == null) {
 							//skip
 							//trace('Warnning: fail to del mobj:'+id);
 						}else {
@@ -80,7 +80,7 @@ package edu.polynyu.gil.bbpro
 						
 					default: // opSet.update
 						mobj = this.objDict[id];
-						if (mobj == undefined || mobj == null) {
+						if ( mobj == null) {
 							trace('faked create mobj:' + id);
 							mobj = new MotionObj(item);
 							this.objCounter++;

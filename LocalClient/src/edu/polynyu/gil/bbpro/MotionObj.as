@@ -73,7 +73,7 @@ package edu.polynyu.gil.bbpro
 			)
 			
 		}
-		public function refreshData(mobjItem:Object) {
+		public function refreshData(mobjItem:Object):void {
 			this.w = mobjItem.w;
 			this.h = mobjItem.h;
 			

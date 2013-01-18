@@ -12,11 +12,12 @@ package edu.polynyu.gil.bbpro
 	 * ...
 	 * @author raybit
 	 */
+	[SWF(frameRate=30,width="1280",height="960")]
 	[Frame(factoryClass="edu.polynyu.gil.bbpro.Preloader")]
 	public class Main extends Engine 
 	{
 		private var sock:GameSocket;
-		
+		private var localDebug:Boolean = true;
 		public function Main():void 
 		{
 
@@ -25,7 +26,13 @@ package edu.polynyu.gil.bbpro
 			
 			sock = new GameSocket( GCfg.localHostStr, GCfg.localSockPort);
 			
-			FP.world = new MotionWorld_base(sock);
+			FP.screen.color = 0xffffff;
+			
+			if (!localDebug) {
+				FP.world = new MotionWorld_base(sock);
+			}else {
+				FP.world = new IntroWorld();
+			}
 
 			
 		}
@@ -34,7 +41,7 @@ package edu.polynyu.gil.bbpro
 		override public function init():void
 		{
 			trace("FlashPunk has started successfully!");
-			if ( this.sock != undefined) {
+			if ( !this.localDebug && this.sock != null) {
 				this.sock.doConn(); //todo check whether connected
 			}
 			

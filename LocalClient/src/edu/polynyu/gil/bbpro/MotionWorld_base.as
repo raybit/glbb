@@ -44,6 +44,7 @@ package edu.polynyu.gil.bbpro
 		private const emptyData:BitmapData= new BitmapData(origW*sizeRatio,origH*sizeRatio,true,0);
 		private const bgRect:Rectangle = new Rectangle(0, 0, origW * sizeRatio, origH * sizeRatio);
 		
+		private const localDebug:Boolean = true;
 
 		//-----------for drawing begin
 		/*
@@ -59,20 +60,23 @@ package edu.polynyu.gil.bbpro
 		{
 			super(sock);
 			
-			
-			this._mObjPool = new MotionObjPool();
-			
-			this._mBitMap = new MotionBitMap(origW * sizeRatio, origH * sizeRatio);
-	
-			this._mBgCanvas = new Canvas(origW*sizeRatio,origH*sizeRatio);
-			this._mBgCanvas.blend = flash.display.BlendMode.MULTIPLY;
-			
-			
-			this._mObjCanvas  =new Canvas(origW*sizeRatio,origH*sizeRatio);
+			if (!this.localDebug) {
+				this._mObjPool = new MotionObjPool();
+				
+				//_mBitMap is pixels source 
+				this._mBitMap = new MotionBitMap(origW * sizeRatio, origH * sizeRatio);
+				
+				//_mBgCanvas is used to draw _mBitMap data on one layer
+				this._mBgCanvas = new Canvas(origW*sizeRatio,origH*sizeRatio);
+				this._mBgCanvas.blend = flash.display.BlendMode.MULTIPLY;
+				
+				//_mObjCanvas is for drawing "focused interesting point" on one layer
+				this._mObjCanvas  =new Canvas(origW*sizeRatio,origH*sizeRatio);
 
-			
-			this.addGraphic(this._mObjCanvas,1); 
-			this.addGraphic(this._mBgCanvas, 2); 
+				
+				this.addGraphic(this._mObjCanvas,1); 
+				this.addGraphic(this._mBgCanvas, 2); 
+			}
 			this.addGraphic(new Image(Assets.BG_dog),3); 
 			
 			
@@ -82,56 +86,57 @@ package edu.polynyu.gil.bbpro
 		
 		override public function render():void {
 			
-			//mBgEntity.renderTarget = this.motionBitmap.getBitMapData();
-			//this._mBgCanvas.draw(0, 0, new BitmapData(1280, 960, true, 0x00000000) );
-			this._mBgCanvas.erase(this._mBitMap.getBitMapData().rect);
-			this._mBgCanvas.draw(0,0,this._mBitMap.getBitMapData());
-			
-			var dict:Dictionary = this._mObjPool.getDict();
-			
-			this._mObjCanvas.erase(bgRect);
-			//this._mObjCanvas.draw(0,0,new BitmapData(1280, 960, True,0));
-			//trace('--------------');
-			for each (var mObj:MotionObj in dict) {
-				if (mObj.hp <= -27) {
-					delete dict[mObj.id];
-					this._mObjPool.objCounter--;
-					trace('word del:mobj:'+mObj.id +',hp:'+mObj.hp+'    lenOfDict:'+this._mObjPool.objCounter);
-					continue;
-				}
-				if (mObj.hp < 100 && mObj.hp == mObj.preHp) {
-					
-					mObj.repeatHPCounter++;
-					
-					if (mObj.repeatHPCounter > 60) {
+			if (!localDebug) {
+				//do the drawing stuff
+				//01 draw the dynamic region on mBGCanvas and this canvas will overlay on other pic
+				this._mBgCanvas.erase(this._mBitMap.getBitMapData().rect);
+				this._mBgCanvas.draw(0,0,this._mBitMap.getBitMapData());
+				
+				var dict:Dictionary = this._mObjPool.getDict();
+				
+				
+				//02 clear and redraw the obj-canvass
+				this._mObjCanvas.erase(bgRect);
+				for each (var mObj:MotionObj in dict) {
+					if (mObj.hp <= -27) {
 						delete dict[mObj.id];
 						this._mObjPool.objCounter--;
 						trace('word del:mobj:'+mObj.id +',hp:'+mObj.hp+'    lenOfDict:'+this._mObjPool.objCounter);
 						continue;
 					}
-				}else {
-					mObj.preHp = mObj.hp;
-				}
+					if (mObj.hp < 100 && mObj.hp == mObj.preHp) {
+						
+						mObj.repeatHPCounter++;
+						
+						if (mObj.repeatHPCounter > 60) {
+							delete dict[mObj.id];
+							this._mObjPool.objCounter--;
+							trace('word del:mobj:'+mObj.id +',hp:'+mObj.hp+'    lenOfDict:'+this._mObjPool.objCounter);
+							continue;
+						}
+					}else {
+						mObj.preHp = mObj.hp;
+					}
+						
+					trace('mobj id:' + mObj.id + ', hp:' + mObj.hp+" rsize:"+mObj.rsize);
 					
-				trace('mobj id:' + mObj.id + ', hp:' + mObj.hp+" rsize:"+mObj.rsize);
+					if(mObj.rsize==0 && mObj.hp>250 ){
+						this._mObjCanvas.drawRect(mObj.rect, mObjCol0,0.15+0.8*(mObj.hp/1000));//
+					}
+					/*
+					 else if (mObj.rsize == 1) {
+						//this._mObjCanvas.drawRect(mObj.rect, mObjCol1,  mObj.hp / 100);
+					}else {
+						//this._mObjCanvas.drawRect(mObj.rect, mObjCol2,  mObj.hp / 100);	
+					}
+					*/
+				}
 				
-				if(mObj.rsize==0 && mObj.hp>250 ){
-					this._mObjCanvas.drawRect(mObj.rect, mObjCol0,0.15+0.8*(mObj.hp/1000));//
-				}
-				/*
-				 else if (mObj.rsize == 1) {
-					//this._mObjCanvas.drawRect(mObj.rect, mObjCol1,  mObj.hp / 100);
-				}else {
-					//this._mObjCanvas.drawRect(mObj.rect, mObjCol2,  mObj.hp / 100);	
-				}
-				*/
-					
-								
 			}
 			
-			//_graphic.render(
+		
 			super.render();
-			trace('......in render');
+			//trace('......in render');
 		
 		}
 		
@@ -143,17 +148,18 @@ package edu.polynyu.gil.bbpro
 			 //["ft"] format info
 			 //["ml"] motionRectList
 			 //["bg"] imgMartix
+			if (!localDebug) {
+				var formatType:int = int(event.dataObj["ft"]);
 
-			var formatType:int = int(event.dataObj["ft"]);
-
-			if (formatType==0){
-				//main msg from motion progran
-				this._mBitMap.update(event.dataObj["bg"]); //:Array
-				this._mObjPool.update(event.dataObj["ml"]);
-				//printJSON(event.dataObj["ml"]);
-			}else if(formatType==1 ) {
-				//private autoUpdate msg from localServer's stabilizer
-				this._mObjPool.update(event.dataObj["ml"]);
+				if (formatType==0){
+					//main msg from motion progran
+					this._mBitMap.update(event.dataObj["bg"]); //:Array
+					this._mObjPool.update(event.dataObj["ml"]);
+					//printJSON(event.dataObj["ml"]);
+				}else if(formatType==1 ) {
+					//private autoUpdate msg from localServer's stabilizer
+					this._mObjPool.update(event.dataObj["ml"]);
+				}
 			}
 		}
 	}
